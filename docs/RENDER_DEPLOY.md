@@ -19,8 +19,8 @@ Render documents the Free service limits at [Deploy for Free](https://render.com
 4. Review the resources. It should list exactly one web service named `qoresentinel`, with the **Free** plan and no attached disk or separate API service.
 5. Enter a strong `ADMIN_INVITATION_CODE` when prompted. Keep it private; use it once to register the first administrator.
 6. Choose **Deploy Blueprint** and wait for the service to finish building and become live.
-7. Open `https://qoresentinel.onrender.com/health`. It should return JSON with `status: "HEALTHY"`.
-8. Open `https://qoresentinel.onrender.com`, register an administrator with the invitation code, then register a student account to try the demo workflow.
+7. Open `https://qoresentinel-fkbp.onrender.com/health`. It should return JSON with `status: "HEALTHY"`.
+8. Open `https://qoresentinel-fkbp.onrender.com`, register an administrator with the invitation code, then register a student account to try the demo workflow.
 
 Render reads the Blueprint from the connected Git branch and prompts for values marked `sync: false` during initial creation. See [Blueprint creation](https://render.com/docs/infrastructure-as-code) and the [Blueprint environment-variable reference](https://render.com/docs/blueprint-spec).
 

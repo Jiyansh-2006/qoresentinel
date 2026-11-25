@@ -18,7 +18,7 @@ services:
       - key: DATABASE_PATH
         value: /tmp/qoresentinel.sqlite
       - key: APP_ORIGINS
-        value: https://qoresentinel.onrender.com
+        value: https://qoresentinel-fkbp.onrender.com
       - key: COOKIE_SECURE
         value: "true"
       - key: DEMO_MODE
