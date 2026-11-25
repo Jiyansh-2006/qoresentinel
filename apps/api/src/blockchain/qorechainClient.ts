@@ -18,30 +18,18 @@ export class QoreChainClient {
   }
 
   public async getLatestBlockNumber(): Promise<number> {
-    try {
-      return await this.provider.getBlockNumber();
-    } catch (e) {
-      // In offline / fallback demo mode return a realistic testnet block
-      return 142089;
-    }
+    return this.provider.getBlockNumber();
   }
 
   public async getAccountBalance(address: string): Promise<{
     balanceWei: string;
     balanceQor: string;
   }> {
-    try {
-      const balance = await this.provider.getBalance(address);
-      return {
-        balanceWei: balance.toString(),
-        balanceQor: ethers.formatEther(balance),
-      };
-    } catch (e) {
-      return {
-        balanceWei: ethers.parseEther("100.0").toString(),
-        balanceQor: "100.0",
-      };
-    }
+    const balance = await this.provider.getBalance(address);
+    return {
+      balanceWei: balance.toString(),
+      balanceQor: ethers.formatEther(balance),
+    };
   }
 
   public async getTransactionReceipt(txHash: string): Promise<ethers.TransactionReceipt | null> {

@@ -395,6 +395,7 @@ applicationRouter.post("/:id/analyse", requireRole("ADMIN"), async (req: Request
   };
   db.agentExecutions.unshift(execution);
   db.agentExecutions.splice(100);
+  db.persistAgentExecution(execution);
   db.sseEmitter.emit("execution_event", {
     executionId: execution.id,
     applicationId: app.id,
@@ -455,6 +456,7 @@ applicationRouter.post("/:id/analyse", requireRole("ADMIN"), async (req: Request
             createdAt: new Date(evt.timestamp).toISOString(),
           });
         }
+        db.persistAgentExecution(execution);
         db.sseEmitter.emit("agent_event", event);
       },
     });
@@ -464,6 +466,7 @@ applicationRouter.post("/:id/analyse", requireRole("ADMIN"), async (req: Request
     execution.durationMs = Date.parse(execution.endedAt) - Date.parse(execution.startedAt);
     execution.finalDecision = result.decision.finalDecision;
     execution.transactionResult = result.transactionResult;
+    db.persistAgentExecution(execution);
     db.sseEmitter.emit("execution_event", {
       executionId: execution.id,
       applicationId: app.id,
@@ -537,6 +540,7 @@ applicationRouter.post("/:id/analyse", requireRole("ADMIN"), async (req: Request
     execution.endedAt = new Date().toISOString();
     execution.durationMs = Date.parse(execution.endedAt) - Date.parse(execution.startedAt);
     execution.error = err instanceof Error ? err.message : "Agent pipeline execution failed.";
+    db.persistAgentExecution(execution);
     db.sseEmitter.emit("execution_event", {
       executionId: execution.id,
       applicationId: app.id,

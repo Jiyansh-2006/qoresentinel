@@ -13,7 +13,7 @@ QoreSentinel is a QoreChain microgrant platform prototype. It combines a seven-s
 - Signs deterministic decisions with ML-DSA-87.
 - Lets administrators create and fund pools and initiate approved milestone payouts.
 - Counts funds as deposited or distributed only after successful receipts and matching GrantVault events are verified.
-- Persists accounts, sessions, applications, pools, decisions, audit records, and transaction ledger data in SQLite.
+- Persists accounts, sessions, applications, pools, decisions, audit records, agent execution reports, and transaction ledger data in SQLite.
 - Provides role-scoped student and administrator dashboards, activity feeds, and server-sent event updates.
 - Offers an optional Groq-powered explanation and a separate website-help assistant.
 
@@ -141,7 +141,8 @@ The web image is built with `VITE_WALLETCONNECT_PROJECT_ID`; set it before build
 - Document verification hashes uploaded evidence; OCR or issuer verification is not configured.
 - The Groq assistant is optional and cannot change deterministic decisions or execute transactions.
 - Email verification and password recovery are not implemented.
-- Agent execution history is held in API memory and is lost when the API restarts.
+- Uploaded file bytes and agent live-stream connections are process-local; persisted execution reports survive API restarts.
+- Live payouts are administrator-authorized wallet submissions. Delegated authenticator spending is not yet used as the transaction signer, so autonomous agent payout is not enabled.
 - Wallet-reported native transfers are not independently verified by the API.
 - Review the deployment, key management, privacy, and contract assumptions before any production use.
 

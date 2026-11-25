@@ -12,11 +12,13 @@ import {
   getPlatformDecisions,
   getPlatformPools,
   getGrantLedgerTransactions,
+  getAgentExecutions,
   getOpenGrantPaymentIntents,
   getGrantPaymentIntent,
   getPoolFundingIntent,
   getPoolFundingTransactions,
   saveGrantLedgerTransaction,
+  saveAgentExecution,
   saveGrantPaymentState,
   saveGrantPaymentIntent,
   savePoolFundingState,
@@ -113,6 +115,7 @@ export class MemoryDatabase {
 
   private constructor() {
     this.seedDefaults();
+    this.agentExecutions = getAgentExecutions<AgentExecutionRecord>();
     this.transactions.push(...getGrantLedgerTransactions());
     this.transactions.push(...getPoolFundingTransactions());
     this.transactions.sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
@@ -206,6 +209,10 @@ export class MemoryDatabase {
 
   public saveApplication(application: { id: string }): void {
     savePlatformApplication(application);
+  }
+
+  public persistAgentExecution(execution: AgentExecutionRecord): void {
+    saveAgentExecution(execution);
   }
 
   public saveDecision(applicationId: string, decision: unknown): void {

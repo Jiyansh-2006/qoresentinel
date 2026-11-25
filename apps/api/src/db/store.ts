@@ -166,7 +166,42 @@ CREATE TABLE IF NOT EXISTS platform_audit_logs (
   payload TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS agent_executions (
+  id TEXT PRIMARY KEY,
+  application_id TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  started_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS agent_executions_started_at ON agent_executions(started_at);
 `);
+
+export function getAgentExecutions<T>(): T[] {
+  return (db.prepare(`SELECT payload FROM agent_executions ORDER BY started_at DESC`).all() as { payload: string }[])
+    .map((row) => JSON.parse(row.payload) as T);
+}
+
+export function saveAgentExecution(execution: {
+  id: string;
+  applicationId: string;
+  startedAt: string;
+}): void {
+  const now = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO agent_executions(id, application_id, payload, started_at, updated_at)
+    VALUES (@id, @applicationId, @payload, @startedAt, @updatedAt)
+    ON CONFLICT(id) DO UPDATE SET
+      application_id = excluded.application_id,
+      payload = excluded.payload,
+      updated_at = excluded.updated_at
+  `).run({
+    id: execution.id,
+    applicationId: execution.applicationId,
+    payload: JSON.stringify(execution),
+    startedAt: execution.startedAt,
+    updatedAt: now,
+  });
+}
 
 export function createGrantPaymentIntent(intent: GrantPaymentIntent): void {
   db.prepare(`
