@@ -91,6 +91,20 @@ app.use("/api/transactions", requireSameOrigin, transactionRouter);
 app.use("/api/audit", requireSameOrigin, requireAuth, requireRole("ADMIN"), auditRouter);
 app.use("/api/assistant", assistantRouter);
 
+if (process.env.SERVE_WEB === "true") {
+  const webDistPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../web/dist");
+  app.use(express.static(webDistPath));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(webDistPath, "index.html"), (error) => {
+      if (error) next(error);
+    });
+  });
+}
+
 // Central error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("[SERVER_ERROR]", err);
