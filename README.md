@@ -1,5 +1,7 @@
 # QoreSentinel
 
+[![CI](https://github.com/Jiyansh-2006/qoresentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/Jiyansh-2006/qoresentinel/actions/workflows/ci.yml)
+
 QoreSentinel is a QoreChain microgrant platform prototype. It combines a seven-step application review pipeline, deterministic grant policies, ML-DSA-87 decision signing, and a receipt-verified ledger for pool funding and grant payouts.
 
 **Important:** this repository is not a production-ready grant service. AI agents assist with review, but they do not have authority to approve or pay grants. Live EVM payouts require an administrator to initiate the flow, a connected wallet to sign, and the API to verify the resulting QoreChain receipt and contract event.
@@ -108,6 +110,8 @@ The API test command runs the compiled tests, so build the API first. Prisma sch
 $env:DATABASE_URL = "file:./prisma/dev.db"
 npx prisma validate --schema=prisma/schema.prisma
 ```
+
+GitHub Actions runs these build and test checks automatically on every push and pull request targeting `main`.
 
 ## Verified QOR accounting
 
