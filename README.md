@@ -46,7 +46,7 @@ prisma/         Prisma schema for tooling
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22 or newer
 - npm
 - Git
 - Optional: Docker Compose, a Groq API key, and a QoreX wallet configured for Diana Testnet
