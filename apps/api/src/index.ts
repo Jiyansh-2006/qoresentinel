@@ -32,7 +32,7 @@ const [
 ]);
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 const allowedOrigins = (process.env.APP_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173")
   .split(",")
   .map((origin) => origin.trim())
@@ -101,7 +101,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
+  app.listen(PORT, "0.0.0.0", () => {
     console.log("==================================================================");
     console.log(`🚀 QoreSentinel API Server running at http://localhost:${PORT}`);
     console.log(`🛡️  Post-Quantum Standard: NIST FIPS 204 ML-DSA-87 (Security Level 5)`);

@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -14,5 +14,5 @@ RUN npm run build -w @qoresentinel/crypto
 RUN npm install -w @qoresentinel/api
 RUN npm run build -w @qoresentinel/api
 
-EXPOSE 4000
+EXPOSE 10000
 CMD ["node", "apps/api/dist/index.js"]

@@ -1,0 +1,54 @@
+services:
+  - type: pserv
+    name: qoresentinel-api
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: DATABASE_PATH
+        value: /var/data/qoresentinel.sqlite
+      - key: APP_ORIGINS
+        value: https://qoresentinel-web.onrender.com
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DEMO_MODE
+        value: "true"
+      - key: QORECHAIN_EVM_RPC
+        value: https://evm-testnet.qore.host
+      - key: QORECHAIN_CHAIN_ID
+        value: "9800"
+      - key: QORECHAIN_NETWORK
+        value: diana-testnet
+      - key: ADMIN_INVITATION_CODE
+        sync: false
+      - key: MLDSA_KEY_ENCRYPTION_SECRET
+        generateValue: true
+    disk:
+      name: qoresentinel-data
+      mountPath: /var/data
+      sizeGB: 1
+
+  - type: web
+    name: qoresentinel-web
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: API_UPSTREAM
+        fromService:
+          type: pserv
+          name: qoresentinel-api
+          property: hostport
+      - key: PORT
+        value: "10000"

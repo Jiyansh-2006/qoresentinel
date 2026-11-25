@@ -135,6 +135,10 @@ docker compose up --build
 
 The web image is built with `VITE_WALLETCONNECT_PROJECT_ID`; set it before building if WalletConnect pairing is needed. Treat Compose as a local/demo deployment, not a production-hardening guide.
 
+## Render
+
+See [docs/RENDER_DEPLOY.md](docs/RENDER_DEPLOY.md) for the Render Blueprint setup, required environment configuration, and persistence notes.
+
 ## Current limitations
 
 - No live Diana Testnet transaction is claimed or tested by this repository handoff.
