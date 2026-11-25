@@ -4,7 +4,10 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm ci \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm ci \
     && npm run build -w @qoresentinel/shared \
     && npm run build -w @qoresentinel/crypto \
     && npm run build -w @qoresentinel/api \
