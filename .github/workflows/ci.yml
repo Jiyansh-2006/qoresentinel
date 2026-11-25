@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 20
     env:
       NODE_ENV: test
-      DATABASE_PATH: ${{ runner.temp }}/qoresentinel-ci.sqlite
+      DATABASE_PATH: ${{ github.workspace }}/data/qoresentinel-ci.sqlite
       DATABASE_URL: file:./prisma/dev.db
 
     steps:
