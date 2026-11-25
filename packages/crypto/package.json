@@ -1,0 +1,20 @@
+{
+  "name": "@qoresentinel/crypto",
+  "version": "1.0.0",
+  "description": "NIST FIPS 204 ML-DSA-87 Post-Quantum Digital Signatures & Keystore for QoreSentinel",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/mldsa87.test.js"
+  },
+  "dependencies": {
+    "@noble/hashes": "^1.4.0",
+    "@noble/post-quantum": "^0.2.0",
+    "@qoresentinel/shared": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

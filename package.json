@@ -1,0 +1,30 @@
+{
+  "name": "qoresentinel-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QoreSentinel – Autonomous Post-Quantum Microgrant Allocation Platform for QoreChain Developer Fest 2026",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "contracts"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:crypto": "npm run test -w @qoresentinel/crypto",
+    "test:contracts": "npm run test -w @qoresentinel/contracts",
+    "test:api": "npm run test -w @qoresentinel/api",
+    "dev:api": "npm run dev -w @qoresentinel/api",
+    "dev:web": "npm run dev -w @qoresentinel/web",
+    "seed": "npm run seed -w @qoresentinel/api"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0",
+    "@noble/post-quantum": "^0.7.1"
+  }
+}

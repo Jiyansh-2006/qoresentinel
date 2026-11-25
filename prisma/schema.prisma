@@ -1,0 +1,281 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("APPLICANT") // ADMIN, REVIEWER, APPLICANT
+  wallets   Wallet[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wallet {
+  id              String   @id @default(cuid())
+  address         String   @unique // EVM 0x address
+  nativeAddress   String?  // QoreChain native address (e.g. qor1...)
+  pqcFingerprint  String?
+  isPqcRegistered Boolean  @default(false)
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model GrantPool {
+  id                   String             @id @default(cuid())
+  onChainPoolId        String             @unique // bytes32 hex
+  title                String
+  description          String
+  category             String
+  totalBudget          String             // Base units as string to preserve precision
+  remainingBudget      String
+  totalDeposited       String             @default("0")
+  totalDistributed     String             @default("0")
+  reservedAmount       String             @default("0")
+  maxGrantPerApplicant String
+  dailyCap             String
+  dailySpent           String             @default("0")
+  tokenAddress         String             @default("0x0000000000000000000000000000000000000000")
+  eligibilityCriteria  String             // JSON string array
+  requiredDocuments    String             // JSON string array
+  isActive             Boolean            @default(true)
+  applications         GrantApplication[]
+  transactions         Transaction[]
+  paymentIntents       GrantPaymentIntent[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model GrantApplication {
+  id                   String                @id @default(cuid())
+  onChainAppId         String?               @unique
+  poolId               String
+  pool                 GrantPool             @relation(fields: [poolId], references: [id])
+  applicantName        String
+  applicantEmail       String
+  projectTitle         String
+  projectDescription   String
+  category             String
+  requestedAmount      String                // Base units
+  approvedAmount       String?               // Base units
+  beneficiaryAddress   String
+  budgetBreakdownJson  String                // JSON array
+  status               String                @default("PENDING") // PENDING, PROCESSING, NEEDS_REVIEW, APPROVED, REJECTED, EXECUTION_PENDING, PAID, FAILED
+  decisionStatus       String?
+  rejectionReason      String?
+  documents            ApplicationDocument[]
+  agentExecutions      AgentExecution[]
+  eligibilityResult    EligibilityResult?
+  fraudAssessment      FraudAssessment?
+  grantDecision        GrantDecision?
+  milestones           Milestone[]
+  transactions         Transaction[]
+  paymentIntents       GrantPaymentIntent[]
+  auditLogs            AuditLog[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+}
+
+model ApplicationDocument {
+  id                   String           @id @default(cuid())
+  applicationId        String
+  application          GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  filename             String
+  mimeType             String
+  sha256Hash           String
+  ipfsCid              String?
+  extractedOcrKeywords String           // JSON array string
+  isSyntheticValid     Boolean          @default(true)
+  createdAt            DateTime         @default(now())
+}
+
+model Agent {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  role        String           @unique // INTAKE_AGENT, DOCUMENT_AGENT, etc.
+  description String
+  version     String           @default("1.0.0")
+  isActive    Boolean          @default(true)
+  executions  AgentExecution[]
+  createdAt   DateTime         @default(now())
+}
+
+model AgentExecution {
+  id             String           @id @default(cuid())
+  agentId        String
+  agent          Agent            @relation(fields: [agentId], references: [id])
+  applicationId  String
+  application    GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  inputPayload   String           // JSON string
+  outputPayload  String           // JSON string
+  executionMs    Int
+  status         String           @default("SUCCESS") // SUCCESS, FAILED
+  error          String?
+  createdAt      DateTime         @default(now())
+}
+
+model EligibilityResult {
+  id                 String           @id @default(cuid())
+  applicationId      String           @unique
+  application        GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  isEligible         Boolean
+  confidence         Float
+  reasons            String           // JSON array string
+  missingRequirements String          // JSON array string
+  evidenceReferences String          // JSON array string
+  createdAt          DateTime         @default(now())
+}
+
+model FraudAssessment {
+  id                     String           @id @default(cuid())
+  applicationId          String           @unique
+  application            GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  passed                 Boolean
+  riskScore              Int              // 0 to 100
+  duplicateApplication   Boolean          @default(false)
+  duplicateDocument      Boolean          @default(false)
+  suspiciousWalletReuse  Boolean          @default(false)
+  inconsistentBudget     Boolean          @default(false)
+  violations             String           // JSON array string
+  details                String
+  createdAt              DateTime         @default(now())
+}
+
+model GrantDecision {
+  id                        String           @id @default(cuid())
+  applicationId             String           @unique
+  application               GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  decision                  String           // APPROVED, REJECTED
+  canonicalPayloadJson      String
+  canonicalPayloadDigest    String           // SHA-256
+  mldsaSignatureHex         String
+  mldsaPublicKeyFingerprint String
+  policyHash                String
+  approvedAmount            String
+  createdAt                 DateTime         @default(now())
+}
+
+model AgentAuthenticator {
+  id                  String   @id @default(cuid())
+  agentAddress        String   @unique
+  mldsaFingerprint    String
+  smartAccountAddress String
+  maxSpendPerTx       String
+  dailySpendingLimit  String
+  dailySpent          String   @default("0")
+  authorizationExpiry BigInt
+  permittedTargets    String   // JSON string array
+  isRevoked           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model SecurityEvent {
+  id           String   @id @default(cuid())
+  eventType    String   // PQC_REGISTRATION, KEY_ROTATION, SIGNATURE_VERIFIED, AGENT_REVOKED, EXPIRED_AUTH_ATTEMPT
+  severity     String   // INFO, WARNING, CRITICAL
+  details      String
+  actorAddress String?
+  txHash       String?
+  createdAt    DateTime @default(now())
+}
+
+model Transaction {
+  id             String           @id @default(cuid())
+  applicationId  String?
+  application    GrantApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  poolId         String?
+  pool           GrantPool?       @relation(fields: [poolId], references: [id])
+  paymentIntentId String?          @unique
+  paymentIntent  GrantPaymentIntent? @relation(fields: [paymentIntentId], references: [id])
+  milestoneIndex Int              @default(0)
+  txHash         String?          @unique
+  blockNumber    Int?
+  fromAddress    String?
+  toAddress      String?
+  amount         String
+  network        String           @default("diana-testnet")
+  chainId        Int              @default(9800)
+  transactionType String          @default("GRANT_PAYMENT") // POOL_FUNDING, GRANT_PAYMENT, WALLET_TRANSFER
+  isSimulated    Boolean          @default(false)
+  status         String           @default("PENDING") // PENDING, CONFIRMED, FAILED, RECONCILIATION_REQUIRED
+  failureReason  String?
+  logIndex       Int?
+  gasUsed        String           @default("0")
+  explorerUrl    String?
+  confirmedAt    DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@unique([applicationId, milestoneIndex])
+}
+
+model GrantPaymentIntent {
+  id              String           @id @default(cuid())
+  applicationId   String
+  application     GrantApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  poolId          String
+  pool            GrantPool        @relation(fields: [poolId], references: [id])
+  onChainPoolId   String
+  ownerEmail      String
+  txHash          String?          @unique
+  chainId         Int
+  contractAddress String
+  senderAddress   String
+  beneficiary     String
+  amount          String
+  milestoneIndex  Int
+  status          String           @default("AWAITING_SUBMISSION") // AWAITING_SUBMISSION, SUBMITTED, CONFIRMED, FAILED
+  expiresAt       DateTime?
+  transaction     Transaction?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Milestone {
+  id             String             @id @default(cuid())
+  applicationId  String
+  application    GrantApplication   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  milestoneIndex Int
+  title          String
+  description    String
+  percentage     Int
+  amount         String
+  status         String             @default("PENDING") // PENDING, SUBMITTED, VERIFIED, REJECTED, PAID
+  paidAt         DateTime?
+  evidence       MilestoneEvidence?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([applicationId, milestoneIndex])
+}
+
+model MilestoneEvidence {
+  id                  String    @id @default(cuid())
+  milestoneId         String    @unique
+  milestone           Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  description         String
+  documentHash        String
+  ipfsCid             String?
+  verificationDetails String    // JSON string
+  verifiedByAgent     Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+}
+
+model AuditLog {
+  id            String            @id @default(cuid())
+  applicationId String?
+  application   GrantApplication? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  action        String            // APPLICATION_SUBMITTED, EVIDENCE_PROCESSED, PQC_VERIFIED, TX_SUBMITTED, etc.
+  actor         String            // "Applicant", "IntakeAgent", "PolicyEngine", "TransactionAgent", etc.
+  details       String
+  recordHash    String            // SHA-256 integrity hash of audit record
+  createdAt     DateTime          @default(now())
+}

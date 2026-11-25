@@ -1,0 +1,40 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: qoresentinel-api
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DEMO_MODE=true
+      - QORECHAIN_EVM_RPC=https://evm-testnet.qore.host
+      - QORECHAIN_CHAIN_ID=9800
+      - QORECHAIN_NETWORK=diana-testnet
+      - QORECHAIN_CONTRACT_ADDRESS=${QORECHAIN_CONTRACT_ADDRESS:-}
+      - APP_ORIGINS=${APP_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      - DATABASE_PATH=/app/data/qoresentinel.sqlite
+      - ADMIN_INVITATION_CODE=${ADMIN_INVITATION_CODE:-}
+      - MLDSA_KEY_ENCRYPTION_SECRET=${MLDSA_KEY_ENCRYPTION_SECRET:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-120b}
+    volumes:
+      - qoresentinel-data:/app/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_WALLETCONNECT_PROJECT_ID: ${VITE_WALLETCONNECT_PROJECT_ID:-}
+    container_name: qoresentinel-web
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  qoresentinel-data:
