@@ -11,7 +11,7 @@
     "prisma:generate": "prisma generate --schema=../../prisma/schema.prisma",
     "prisma:push": "prisma db push --schema=../../prisma/schema.prisma",
     "seed": "tsx src/services/seed.ts",
-    "test": "node --test dist/test/advisoryNarrative.test.js dist/test/agentRoutes.test.js dist/test/assistantRoutes.test.js dist/test/authRoutes.test.js dist/test/dashboard.test.js dist/test/grantReceiptVerifier.test.js dist/test/integration.test.js dist/test/securityRoutes.test.js"
+    "test": "node --test --test-concurrency=1 dist/test/advisoryNarrative.test.js dist/test/agentRoutes.test.js dist/test/assistantRoutes.test.js dist/test/authRoutes.test.js dist/test/dashboard.test.js dist/test/grantReceiptVerifier.test.js dist/test/integration.test.js dist/test/securityRoutes.test.js"
   },
   "dependencies": {
     "@cosmjs/encoding": "^0.39.0",

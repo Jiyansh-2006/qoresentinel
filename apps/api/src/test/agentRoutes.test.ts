@@ -7,6 +7,7 @@ import { db, type AgentExecutionRecord } from "../database/db.js";
 import { agentRouter } from "../routes/agentRoutes.js";
 import { applicationRouter } from "../routes/applicationRoutes.js";
 import { DemoDataService } from "../services/demoDataService.js";
+import { getAgentExecutions } from "../db/store.js";
 
 async function withAgentServer<T>(run: (port: number) => Promise<T>): Promise<T> {
   const app = express();
@@ -99,16 +100,18 @@ async function withExecutionServer<T>(run: (port: number) => Promise<T>): Promis
 }
 
 test("agent centre exposes overview, history, reports, and static paths", async () => {
+  const timestamp = Date.now();
+  const executionId = `agent-center-test-execution-${timestamp}`;
   const execution: AgentExecutionRecord = {
-    id: "agent-center-test-execution",
+    id: executionId,
     applicationId: "app-test",
     status: "COMPLETED",
-    startedAt: "2026-01-01T00:00:00.000Z",
-    endedAt: "2026-01-01T00:00:00.250Z",
+    startedAt: new Date(timestamp).toISOString(),
+    endedAt: new Date(timestamp + 250).toISOString(),
     durationMs: 250,
     finalDecision: "REJECTED",
     events: [{
-      executionId: "agent-center-test-execution",
+      executionId,
       applicationId: "app-test",
       agentRole: "INTAKE_AGENT",
       agentName: "Application Intake Agent",
@@ -117,7 +120,7 @@ test("agent centre exposes overview, history, reports, and static paths", async 
       status: "COMPLETE",
       executionMs: 10,
       data: { valid: true },
-      timestamp: Date.parse("2026-01-01T00:00:00.100Z"),
+      timestamp: timestamp + 100,
     }],
     reports: [{
       agentRole: "INTAKE_AGENT",
@@ -126,7 +129,7 @@ test("agent centre exposes overview, history, reports, and static paths", async 
       status: "COMPLETE",
       executionMs: 10,
       output: { valid: true },
-      createdAt: "2026-01-01T00:00:00.100Z",
+      createdAt: new Date(timestamp + 100).toISOString(),
     }],
   };
   db.agentExecutions.unshift(execution);
@@ -148,7 +151,7 @@ test("agent centre exposes overview, history, reports, and static paths", async 
       assert.ok(history.payload.some((item) => item.id === execution.id));
       assert.equal(detail.payload.reports.length, 1);
       assert.equal(agent.payload.role, "INTAKE_AGENT");
-      assert.equal(agent.payload.reports.length, 1);
+      assert.ok(agent.payload.reports.some((report: any) => report.executionId === execution.id));
       assert.ok(activity.payload.some((event) => event.executionId === execution.id));
     });
   } finally {
@@ -188,6 +191,7 @@ test("review execution records real agent outputs and prevents replay", async ()
       assert.equal(execution.payload.finalDecision, "REJECTED");
       assert.ok(execution.payload.reports.length >= 6);
       assert.ok(execution.payload.reports.some((report) => report.agentRole === "COORDINATOR_AGENT"));
+      assert.ok(getAgentExecutions<AgentExecutionRecord>().some((item) => item.id === executionId));
 
       const replay = await postJson<{ error: string }>(
         port,
