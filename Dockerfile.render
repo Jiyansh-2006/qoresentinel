@@ -16,7 +16,7 @@ RUN apt-get update \
 ENV NODE_ENV=production
 ENV SERVE_WEB=true
 ENV PORT=10000
-ENV DATABASE_PATH=/tmp/qoresentinel.sqlite
+ENV DATABASE_PATH=/var/data/qoresentinel.sqlite
 
 EXPOSE 10000
 

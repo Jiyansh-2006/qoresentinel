@@ -2,7 +2,7 @@ services:
   - type: web
     name: qoresentinel
     runtime: docker
-    plan: free
+    plan: starter
     region: oregon
     dockerfilePath: ./Dockerfile.render
     dockerContext: .
@@ -16,7 +16,7 @@ services:
       - key: SERVE_WEB
         value: "true"
       - key: DATABASE_PATH
-        value: /tmp/qoresentinel.sqlite
+        value: /var/data/qoresentinel.sqlite
       - key: APP_ORIGINS
         value: https://qoresentinel-fkbp.onrender.com
       - key: COOKIE_SECURE
@@ -33,3 +33,7 @@ services:
         sync: false
       - key: MLDSA_KEY_ENCRYPTION_SECRET
         generateValue: true
+    disk:
+      name: qoresentinel-data
+      mountPath: /var/data
+      sizeGB: 1

@@ -15,7 +15,12 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.js";
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  mobileNavOpen: boolean;
+  onNavigate: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ mobileNavOpen, onNavigate }) => {
   const { user } = useAuth();
   const navItems = [
     { to: "/", label: "Landing Overview", icon: Home, exact: true },
@@ -36,9 +41,9 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-800 bg-[#070b14] flex flex-col justify-between p-4 min-h-[calc(100vh-4rem)]">
-      <div className="space-y-1">
-        <div className="px-3 py-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+    <aside id="mobile-navigation" className={`${mobileNavOpen ? "flex" : "hidden"} w-full md:flex md:w-64 md:shrink-0 border-b md:border-b-0 md:border-r border-slate-800 bg-[#070b14] md:flex-col md:justify-between p-2 md:p-4 md:min-h-[calc(100vh-4rem)]`}>
+      <div className="flex min-w-0 flex-1 flex-col gap-1 md:block md:space-y-1">
+        <div className="hidden md:block px-3 py-2 text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
           Platform Menu
         </div>
         {navItems.map((item) => {
@@ -48,8 +53,9 @@ export const Sidebar: React.FC = () => {
               key={item.to}
               to={item.to}
               end={item.exact}
+              onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                `flex shrink-0 items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-medium whitespace-nowrap transition-all ${
                   isActive
                     ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-sm shadow-cyan-500/10"
                     : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60"
@@ -64,7 +70,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* PQC Security Footer Indicator */}
-      <div className="p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-2">
+      <div className="hidden md:block p-3 rounded-lg bg-slate-900/80 border border-slate-800 space-y-2">
         <div className="flex items-center justify-between text-xs">
           <span className="text-slate-400 font-medium">Post-Quantum</span>
           <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800">
