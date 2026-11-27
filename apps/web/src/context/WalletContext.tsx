@@ -9,6 +9,7 @@ import React, {
 
 import {
   getActiveWalletProvider,
+  getQoreXProvider,
   connectQoreXWallet,
   connectQoreXNativeWallet,
   connectMobileWallet as connectMobileWalletProvider,
@@ -58,6 +59,32 @@ const DEFAULT_CHAIN_ID = 9800;
 const getNetworkName = (chainId: number): string => {
   return getQoreChainNetwork(chainId)?.name ?? `Unsupported EVM Chain ${chainId}`;
 };
+
+function isMobileDevice(): boolean {
+  return /android|iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function openCurrentSiteInQoreX(): void {
+  const pageUrl = new URL(`${window.location.origin}${window.location.pathname}`);
+  const isIpAddress = /^\d{1,3}(\.\d{1,3}){3}$/.test(pageUrl.hostname) || pageUrl.hostname.includes(":");
+  if (
+    pageUrl.protocol !== "https:" ||
+    pageUrl.port ||
+    pageUrl.username ||
+    pageUrl.password ||
+    pageUrl.hostname === "localhost" ||
+    pageUrl.hostname.endsWith(".localhost") ||
+    isIpAddress ||
+    pageUrl.href.length > 2048
+  ) {
+    throw new Error("Open QoreSentinel at a public HTTPS website address, then tap Connect EVM again. QoreX mobile cannot connect to localhost or a local network address.");
+  }
+
+  const qorexBrowseUrl = new URL("https://link.qore.network/browse");
+  qorexBrowseUrl.searchParams.set("url", pageUrl.href);
+  window.location.assign(qorexBrowseUrl.toString());
+}
 
 const parseChainId = (chainId: string | number): number => {
   if (typeof chainId === "number") {
@@ -466,6 +493,13 @@ export const WalletProvider: React.FC<{
     clearEvmWalletState();
 
     try {
+      // QoreX mobile injects its EVM provider only inside its own dApp browser.
+      // From a regular mobile browser, open this site in that browser first.
+      if (isMobileDevice() && !getQoreXProvider()) {
+        openCurrentSiteInQoreX();
+        return;
+      }
+
       const provider = await connectQoreXWallet();
 
       const accounts = await provider.request({
