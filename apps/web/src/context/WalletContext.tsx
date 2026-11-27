@@ -10,6 +10,7 @@ import React, {
 import {
   getActiveWalletProvider,
   getQoreXProvider,
+  getQoreXNativeProvider,
   connectQoreXWallet,
   connectQoreXNativeWallet,
   connectMobileWallet as connectMobileWalletProvider,
@@ -555,6 +556,13 @@ export const WalletProvider: React.FC<{
     connectionInProgress.current = true;
 
     try {
+      // QoreX exposes its native provider only inside its extension or mobile dApp browser.
+      // From a regular mobile browser, open this site in QoreX before requesting access.
+      if (isMobileDevice() && !getQoreXNativeProvider()) {
+        openCurrentSiteInQoreX();
+        return;
+      }
+
       selectNativeNetwork(selectedChainId);
       const currentAddress = await connectQoreXNativeWallet(selectedChainId);
       if (!mounted.current) return;

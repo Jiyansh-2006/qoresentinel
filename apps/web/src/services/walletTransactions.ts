@@ -70,6 +70,10 @@ export function getQoreXProvider(): any | null {
   return injectedProviders.find(isQoreXProvider) || announcedQoreXProvider;
 }
 
+export function getQoreXNativeProvider(): any | null {
+  return getQorexNative() || null;
+}
+
 function isQoreXProvider(provider: any): boolean {
   const explicitProvider =
     typeof window !== "undefined" ? window.qorex?.evm : null;
