@@ -13,8 +13,12 @@ import {
 } from "lucide-react";
 import { api } from "../services/api.js";
 import { SecurityStatus } from "../types/index.js";
+import { useWallet } from "../context/WalletContext.js";
+import { QoreChainIntegrationStatus } from "../components/QoreChainIntegrationStatus.js";
+import { NetworkFeatureStatus } from "../components/NetworkFeatureStatus.js";
 
 export const SecurityPage: React.FC = () => {
+  const { nativeAddress, nativeChainId } = useWallet();
   const [security, setSecurity] = useState<SecurityStatus | null>(null);
   const [isRotating, setIsRotating] = useState(false);
   const [countdown, setCountdown] = useState<number>(7200);
@@ -138,7 +142,7 @@ export const SecurityPage: React.FC = () => {
           </div>
 
           <p className="text-xs text-slate-400 leading-relaxed">
-            Quantum-safe Module-Lattice Digital Signatures protecting all autonomous grant verdicts against Shore's algorithm and future quantum decoders.
+            ML-DSA-87 signatures protect grant decision records. QoreChain native transactions use a separate hybrid wallet signature.
           </p>
 
           <div className="space-y-3 font-mono text-xs">
@@ -205,6 +209,10 @@ export const SecurityPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <QoreChainIntegrationStatus nativeAddress={nativeAddress} nativeChainId={nativeChainId} />
+
+      <NetworkFeatureStatus nativeAddress={nativeAddress} />
 
       {/* Spending Rules & Smart Account Boundary Matrix */}
       <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">

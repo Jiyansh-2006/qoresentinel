@@ -1,13 +1,16 @@
-import { deriveUnifiedAccount, derivePqcCanonical, buildRegisterPqcKeyMsg, EthNativeSigner, openEvmWindowMsg, fetchEvmWindow, msg } from '@qorechain/sdk';
+import { qorechainTestnet } from '@qorechain/evm';
+import { CHAIN_UPGRADE_V3_2_3, deriveUnifiedAccount, derivePqcCanonical, buildRegisterPqcKeyMsg, EthNativeSigner, fetchEvmWindow, fetchPqcStatus, isUpgradeApplied, msg, openEvmWindowMsg, signProofOfPossession, verifyProofOfPossession } from '@qorechain/sdk';
 import { StargateClient } from '@cosmjs/stargate';
-import { createPublicClient, createWalletClient, http, parseEther, type Address, type Hex } from 'viem';
+import { createPublicClient, createWalletClient, http, parseEther, type Address, type Chain, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
 const REST = process.env.QORE_REST || 'https://api-testnet.qore.host';
 const RPC = process.env.QORE_RPC || 'https://rpc-testnet.qore.host';
 const EVM_RPC = process.env.QORE_EVM_RPC || 'https://evm-testnet.qore.host';
 const CHAIN_ID = 9800;
-const chain = { id: CHAIN_ID, name: 'QoreChain Diana', nativeCurrency: { name: 'QOR', symbol: 'QOR', decimals: 18 }, rpcUrls: { default: { http: [EVM_RPC] } }, blockExplorers: { default: { name: 'Qore Explorer', url: 'https://explore.qore.network' } } } as const;
+// The adapter and API resolve separate viem type copies; the runtime chain
+// definition is compatible, so narrow it at this boundary.
+const chain = qorechainTestnet as unknown as Chain;
 const abi = [
   { type: 'function', name: 'payGrant', stateMutability: 'nonpayable', inputs: [{name:'applicationId',type:'bytes32'},{name:'applicant',type:'address'},{name:'amount',type:'uint256'},{name:'evidenceHash',type:'bytes32'}], outputs: [] },
   { type: 'function', name: 'paidApplication', stateMutability: 'view', inputs: [{name:'',type:'bytes32'}], outputs: [{type:'bool'}] }
@@ -38,21 +41,26 @@ export async function openAgentWindow() {
   const pqcKeypair = derivePqcCanonical(accountBase.cosmos, mnemonic);
   const account = { ...accountBase, pqc: pqcKeypair } as any;
   const transport = await StargateClient.connect(RPC);
-  const keyStatusResponse = await fetch(`${REST}/qorechain/pqc/v1/account/${account.cosmos}`);
-  if (!keyStatusResponse.ok) throw new Error('Could not verify the account PQC registration state. Refusing to register blindly.');
-  const keyStatus = await keyStatusResponse.json() as any;
-  if (!(keyStatus.registered || keyStatus.public_key || keyStatus.account?.registered || keyStatus.pqc_key?.public_key || keyStatus.pqcKey?.publicKey)) {
+  const keyStatus = await fetchPqcStatus({ rest: REST, address: account.cosmos });
+  let pqcPossessionProven = keyStatus.possessionProven === true;
+  if (!keyStatus.registered) {
+    const proofSupported = await isUpgradeApplied({ rest: REST, upgrade: CHAIN_UPGRADE_V3_2_3 });
+    if (!proofSupported) throw new Error('Diana Testnet has not enabled proof-of-possession PQC registration. Refusing to register without the requested proof.');
+    const proofOfPossession = signProofOfPossession({ chainId: 'qorechain-diana', account: account.cosmos, keypair: pqcKeypair });
+    if (!verifyProofOfPossession({ chainId: 'qorechain-diana', account: account.cosmos, publicKey: pqcKeypair.publicKey, proof: proofOfPossession })) {
+      throw new Error('Local verification of the ML-DSA-87 proof of possession failed.');
+    }
     const classicalSigner = new EthNativeSigner(account, { signMode: 'classical', rest: REST });
     const sequence = await transport.getSequence(account.cosmos);
     const publicKeyBytes = Uint8Array.from(Buffer.from(account.publicKey.replace(/^0x/, ''), 'hex'));
     await classicalSigner.signAndBroadcast(transport, {
       chainId: 'qorechain-diana', accountNumber: sequence.accountNumber, sequence: sequence.sequence,
-      messages: [buildRegisterPqcKeyMsg(account.cosmos, { pqcKeypair, ecdsaPubkey: publicKeyBytes })],
+      messages: [buildRegisterPqcKeyMsg(account.cosmos, { pqcKeypair, ecdsaPubkey: publicKeyBytes, proofOfPossession })],
       fee: { amount: [{ denom: 'uqor', amount: '60000' }], gas: '600000' }
     });
-    const verifyResponse = await fetch(`${REST}/qorechain/pqc/v1/account/${account.cosmos}`);
-    const verified = verifyResponse.ok ? await verifyResponse.json() as any : null;
-    if (!(verified?.registered || verified?.public_key || verified?.account?.registered || verified?.pqc_key?.public_key || verified?.pqcKey?.publicKey)) throw new Error('PQC key registration was broadcast, but the account query does not confirm the key.');
+    const verified = await fetchPqcStatus({ rest: REST, address: account.cosmos });
+    if (!verified.registered || verified.possessionProven !== true) throw new Error('PQC key registration was broadcast, but Diana did not confirm the key and its proof of possession.');
+    pqcPossessionProven = true;
   }
   const signer = new EthNativeSigner(account, { rest: REST });
   const sequence = await transport.getSequence(account.cosmos);
@@ -62,7 +70,7 @@ export async function openAgentWindow() {
     messages: [openEvmWindowMsg({ sender: account.cosmos, blocks: 1200, maxTxs: 5, maxValue: '5000000', allowedTargets: [target] })]
   });
   const window = await fetchEvmWindow({ rest: REST, address: account.cosmos });
-  return { txHash: result.transactionHash, address: account.cosmos, evmAddress: account.evm, window };
+  return { txHash: result.transactionHash, address: account.cosmos, evmAddress: account.evm, pqcPossessionProven, window };
 }
 
 export async function configureSessionSpendingRule() {

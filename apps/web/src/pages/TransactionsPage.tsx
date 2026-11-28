@@ -10,6 +10,7 @@ export const TransactionsPage: React.FC = () => {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("0.1");
   const [isSending, setIsSending] = useState(false);
+  const [lastNativeTransfer, setLastNativeTransfer] = useState<{ txHash: string; shield: string } | null>(null);
   const [balanceRefreshError, setBalanceRefreshError] = useState<string | null>(null);
   const {
     isConnected,
@@ -42,6 +43,7 @@ export const TransactionsPage: React.FC = () => {
     try {
       if (!nativeConnected) await connectNativeWallet();
       const transfer = await sendQorTransfer(recipient, amount, nativeChainId);
+      setLastNativeTransfer({ txHash: transfer.txHash, shield: transfer.shield });
       try {
         await refreshWalletData();
       } catch (refreshError) {
@@ -143,6 +145,26 @@ export const TransactionsPage: React.FC = () => {
       <p className="text-xs text-slate-500">
         For your phone, open this app in QoreX’s dApp browser using an HTTPS URL reachable from the phone; a desktop localhost URL is not accessible there.
       </p>
+
+      {lastNativeTransfer && (
+        <div className={`rounded-xl border p-4 text-xs ${lastNativeTransfer.shield === "shielded" ? "border-emerald-800 bg-emerald-950/30 text-emerald-300" : lastNativeTransfer.shield === "downgraded" ? "border-rose-800 bg-rose-950/30 text-rose-300" : "border-amber-800 bg-amber-950/30 text-amber-300"}`}>
+          <p className="font-semibold">
+            {lastNativeTransfer.shield === "shielded"
+              ? "Hybrid ML-DSA-87 + secp256k1 signatures confirmed by QoreX."
+              : lastNativeTransfer.shield === "downgraded"
+                ? "QoreX reports this transaction was committed without the hybrid signature layer."
+                : `QoreX signature status: ${lastNativeTransfer.shield}.`}
+          </p>
+          <a
+            className="mt-1 inline-flex items-center gap-1 break-all font-mono underline"
+            href={`https://explore.qore.network/tx/${lastNativeTransfer.txHash}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {lastNativeTransfer.txHash} <ExternalLink className="h-3 w-3 shrink-0" />
+          </a>
+        </div>
+      )}
 
       <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
         <div className="overflow-x-auto">

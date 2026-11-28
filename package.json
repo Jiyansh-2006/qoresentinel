@@ -14,12 +14,23 @@
     "test:crypto": "npm run test -w @qoresentinel/crypto",
     "test:contracts": "npm run test -w @qoresentinel/contracts",
     "test:api": "npm run test -w @qoresentinel/api",
+    "scaffold:qorechain": "create-qorechain-dapp",
+    "toolkit:install": "npm install --prefix integrations/typescript --legacy-peer-deps --registry=https://registry.npmjs.org",
+    "qore:chain": "npm --prefix integrations/typescript run qore",
+    "qore:mcp": "npm --prefix integrations/typescript run mcp",
+    "qore:inspect": "npm --prefix integrations/typescript run inspect --",
+    "qore:rdk-status": "npm --prefix integrations/typescript run rdk:status",
+    "qore:asset-mock": "npm --prefix integrations/typescript run asset:mock",
+    "qore:seal-demo": "npm --prefix integrations/typescript run seal:demo --",
+    "qorescan:contracts": "npm --prefix integrations/typescript run qorescan:contracts",
+    "qore:scaffold-rollup": "npm --prefix integrations/typescript run scaffold:rollup --",
     "dev:api": "npm run dev -w @qoresentinel/api",
     "dev:web": "npm run dev -w @qoresentinel/web",
     "seed": "npm run seed -w @qoresentinel/api"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "create-qorechain-dapp": "^0.14.0",
     "tsx": "^4.23.15",
     "typescript": "^5.4.5"
   },

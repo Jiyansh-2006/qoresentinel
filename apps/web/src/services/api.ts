@@ -240,6 +240,18 @@ export const api = {
     return res.json();
   },
 
+  getNetworkFeatures: async (address?: string) => {
+    const query = address ? `?address=${encodeURIComponent(address)}` : "";
+    const res = await fetch(`${API_BASE}/network/features${query}`, { cache: "no-store" });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || "Failed to inspect QoreChain network features.");
+    return payload as {
+      network: { name: string; chainId: number; evmConnected: boolean };
+      checkedAt: string;
+      features: Array<{ id: string; label: string; state: string; detail: string; source?: string }>;
+    };
+  },
+
   extendEvmWindow: async (durationSeconds: number = 7200) => {
     const res = await fetch(`${API_BASE}/security/authorise`, {
       method: "POST",

@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/Jiyansh-2006/qoresentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/Jiyansh-2006/qoresentinel/actions/workflows/ci.yml)
 
+<p align="center">
+  <img src="assets/cover.png" alt="QoreSentinel — Autonomous Post-Quantum Microgrant Allocation Platform" width="100%" />
+</p>
+
 QoreSentinel is a QoreChain microgrant platform prototype. It combines a seven-step application review pipeline, deterministic grant policies, ML-DSA-87 decision signing, and a receipt-verified ledger for pool funding and grant payouts.
 
 **Important:** this repository is not a production-ready grant service. AI agents assist with review, but they do not have authority to approve or pay grants. Live EVM payouts require an administrator to initiate the flow, a connected wallet to sign, and the API to verify the resulting QoreChain receipt and contract event.
@@ -27,6 +31,9 @@ Demo activity is clearly distinguished from live transactions. A simulated revie
 - **Cryptography:** ML-DSA-87, SHA-256, AES-GCM keystore support
 - **Contracts:** Solidity and Hardhat
 - **Network target:** QoreChain Diana Testnet (EVM chain ID `9800`)
+- **QoreChain integrations:** TypeScript SDK, React hooks/provider, EVM chain adapter, read-only SVM client, and QoreX wallet APIs. See [integration notes](docs/qorechain-integrations.md).
+- **Developer ecosystem:** the public `/ecosystem` page catalogs all 15 QoreChain SDKs/kits/tools and includes a read-only Diana Testnet feature monitor. It distinguishes app-runtime integrations from companion commands and demo/reference-only code.
+- **Polyglot stack manifests:** isolated TypeScript, Python, Go, Rust, Java/Kotlin, Swift/Android, and Solidity toolchains for the broader QoreChain package ecosystem. See [stack coverage](docs/qorechain-stack-coverage.md) and [install guide](integrations/README.md).
 
 Prisma models and scripts are included for schema tooling, but the running API currently uses `DATABASE_PATH` with `better-sqlite3`; it does not use Prisma as its runtime data layer.
 

@@ -3,6 +3,7 @@ import cors from "cors";
 import * as dotenv from "dotenv";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getNetworkFeatures } from "./chain/networkFeatures.js";
 
 const envPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../.env");
 dotenv.config({ path: envPath });
@@ -75,6 +76,21 @@ app.get("/health", (req, res) => {
     pqcAlgorithm: "ML-DSA-87",
     timestamp: new Date().toISOString(),
   });
+});
+
+// Public, read-only testnet capability checks. No wallet transactions are sent.
+app.get("/api/network/features", async (req, res, next) => {
+  try {
+    const address = typeof req.query.address === "string" ? req.query.address.trim() : undefined;
+    if (address && !/^qor1[0-9a-z]{20,80}$/.test(address)) {
+      res.status(400).json({ error: "Enter a valid QoreChain native address (qor1…)." });
+      return;
+    }
+    res.setHeader("Cache-Control", "no-store");
+    res.json(await getNetworkFeatures(address));
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Mount Routes

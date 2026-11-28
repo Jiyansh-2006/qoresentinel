@@ -1,0 +1,68 @@
+{
+  "name": "@qoresentinel/qorechain-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Optional isolated QoreChain ecosystem toolchain; not part of the deployed web bundle.",
+  "engines": {
+    "node": ">=26"
+  },
+  "dependencies": {
+    "@qorechain/asset-kit": "^0.1.0",
+    "@qorechain/chain-bridge": "^0.2.3",
+    "@qorechain/evm": "^0.14.0",
+    "@qorechain/handles": "^0.1.0",
+    "@qorechain/mcp": "^0.1.0",
+    "@qorechain/pq-light-client": "^0.1.0",
+    "@qorechain/pqc": "^0.2.3",
+    "@qorechain/qore-cli": "^0.1.0",
+    "@qorechain/qoreseal": "^0.1.0",
+    "@qorechain/qorescan": "^0.1.0",
+    "@qorechain/qoresign": "^0.2.0",
+    "@qorechain/qorex-cosmos-kit": "^0.1.0",
+    "@qorechain/qorex-interchain-kit": "^0.1.0",
+    "@qorechain/qorex-rainbowkit": "^0.1.0",
+    "@qorechain/qorex-types": "^0.1.0",
+    "@qorechain/rdk": "^0.9.0",
+    "@qorechain/react": "^0.14.0",
+    "@qorechain/sdk": "^0.14.0",
+    "@qorechain/svm": "^0.14.0",
+    "create-qorechain-dapp": "^0.14.0",
+    "create-qorechain-rollup": "^0.9.0",
+    "@cosmos-kit/core": "^2.18.1",
+    "@cosmos-kit/react": "^2.24.1",
+    "@interchain-kit/core": "^0.11.0",
+    "@interchain-kit/react": "^0.11.1",
+    "@rainbow-me/rainbowkit": "^2.2.11",
+    "@solana/web3.js": "^1.99.0",
+    "@tanstack/react-query": "^5.0.0",
+    "viem": "^2.0.0",
+    "wagmi": "^2.9.0"
+  },
+  "devDependencies": {
+    "@qorechain/rdk-cli": "^0.9.0",
+    "@qorechain/qorex-synpress": "^0.1.0",
+    "@qorechain/qorex-wallet-mock": "^0.1.0",
+    "tsx": "^4.23.15",
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0"
+  },
+  "optionalDependencies": {
+    "@qorechain/wallet-adapter": "^0.6.0"
+  },
+  "scripts": {
+    "scaffold:dapp": "create-qorechain-dapp",
+    "scaffold:rollup": "create-qorechain-rollup",
+    "mcp": "qorechain-mcp --network testnet",
+    "qore": "qore chain --network testnet",
+    "qorescan": "qorescan scan --help",
+    "inspect": "tsx src/cli.ts inspect",
+    "rdk:status": "tsx src/cli.ts rdk-status",
+    "asset:mock": "tsx src/cli.ts asset-mock",
+    "seal:demo": "tsx src/cli.ts seal-demo",
+    "bridge:features": "tsx src/cli.ts bridge-feature-ids",
+    "qorescan:contracts": "qorescan solidity ../../contracts --out -",
+    "build": "tsc --noEmit"
+  }
+}

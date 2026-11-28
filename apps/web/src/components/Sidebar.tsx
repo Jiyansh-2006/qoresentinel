@@ -12,6 +12,7 @@ import {
   MessageCircle,
   LogIn,
   UserPlus,
+  Blocks,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext.js";
 
@@ -26,6 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileNavOpen, onNavigate }) =
     { to: "/", label: "Landing Overview", icon: Home, exact: true },
     ...(user ? [{ to: "/dashboard", label: "Dashboard", icon: LayoutDashboard }] : []),
     { to: "/pools", label: "Grant Pools", icon: Layers },
+    { to: "/ecosystem", label: "QoreChain Ecosystem", icon: Blocks },
     ...(user ? [{ to: "/applications", label: "Applications", icon: FileText }] : []),
     ...(user ? [{ to: "/transactions", label: "Transactions", icon: Receipt }] : []),
     ...(user?.role === "ADMIN" ? [

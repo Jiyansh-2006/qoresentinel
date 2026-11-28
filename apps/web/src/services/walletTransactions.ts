@@ -678,6 +678,7 @@ export async function sendQorTransfer(
   amountDenom: string;
   network: string;
   chainId: number;
+  shield: string;
 }> {
   let decodedRecipient: ReturnType<typeof fromBech32>;
   try {
@@ -766,6 +767,7 @@ export async function sendQorTransfer(
     amountDenom: "uqor",
     network: network.name,
     chainId: network.evmChainId,
+    shield: result.shield,
   };
 }
 
